@@ -1,12 +1,13 @@
 // import express - server lib
 const express = require("express");
 const path = require("path");
-const multer = require("multer");
 
 // import cors to set CORS options to '*' easily
 const cors = require("cors");
 const dbOperations = require("./dbOperations");
 const mailer = require("./mailer");
+
+const SPECIAL_LETTERS = `!@#$%^&*()_+\-=\[\]{};':"\\|.<>\/?`;
 
 const validateEmail = (email) => {
   return String(email)
@@ -23,7 +24,19 @@ const validateName = (str) => {
 };
 
 const validatePassword = (password) => {
-  return String(password).match(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/);
+  var res = true;
+
+  if (password.length < 8) res = false;
+
+  var upperCaseLetters = /[A-Z]/g;
+  var lowerCaseLetters = /[a-z]/g;
+  if (!password.match(upperCaseLetters) && !password.match(lowerCaseLetters))
+    res = false;
+
+  var numLetters = /[0-9]/g;
+  if (!password.match(numLetters)) res = false;
+
+  return res;
 };
 
 const port = process.env.PORT || 5000;
@@ -104,8 +117,16 @@ app.post("/api/forgotPassword", async (req, res) => {
       if (user.length > 0) {
         let newPass = "weak";
         while (!validatePassword(newPass)) {
+          let randLetter = Math.floor(Math.random() * SPECIAL_LETTERS.length);
+          let randPos = Math.floor(Math.random() * newPass.length);
+
           newPass = Math.random().toString(36).slice(-10);
+          newPass =
+            newPass.slice(0, randPos) +
+            SPECIAL_LETTERS.charAt(randLetter) +
+            newPass.slice(randPos);
         }
+
         const rowsAffected = await dbOperations.updateUserPassword(
           userEmail,
           newPass

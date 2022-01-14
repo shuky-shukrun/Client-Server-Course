@@ -7,7 +7,19 @@ const validateEmail = (email) => {
 };
 
 const validatePassword = (password) => {
-  return String(password).match(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/);
+  var res = true;
+
+  if (password.length < 8) res = false;
+
+  var upperCaseLetters = /[A-Z]/g;
+  var lowerCaseLetters = /[a-z]/g;
+  if (!password.match(upperCaseLetters) && !password.match(lowerCaseLetters))
+    res = false;
+
+  var numLetters = /[0-9]/g;
+  if (!password.match(numLetters)) res = false;
+
+  return res;
 };
 
 const validateString = (str) => {
@@ -20,4 +32,12 @@ const validateEmptyFields = (arr) => {
   return arr.every((input) => input.trim() !== "");
 };
 
-export { validatePassword, validateString, validateEmail, validateEmptyFields };
+const SPECIAL_LETTERS = `!@#$%^&*()_+\-=\[\]{};':"\\|.<>\/?`;
+
+export {
+  validatePassword,
+  validateString,
+  validateEmail,
+  validateEmptyFields,
+  SPECIAL_LETTERS,
+};
